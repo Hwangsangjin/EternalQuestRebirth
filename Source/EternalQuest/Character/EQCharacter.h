@@ -6,6 +6,9 @@
 #include "GameFramework/Character.h"
 #include "EQCharacter.generated.h"
 
+class UCameraComponent;
+class USpringArmComponent;
+
 UCLASS()
 class ETERNALQUEST_API AEQCharacter : public ACharacter
 {
@@ -21,4 +24,11 @@ public:
 	virtual void Tick(float DeltaTime) override;
 
 	virtual void SetupPlayerInputComponent(UInputComponent* PlayerInputComponent) override;
+
+private:
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = Camera, meta = (AllowPrivateAccess = true))
+	USpringArmComponent* CameraBoom;
+
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = Camera, meta = (AllowPrivateAccess = true))
+	UCameraComponent* FollowCamera;
 };
