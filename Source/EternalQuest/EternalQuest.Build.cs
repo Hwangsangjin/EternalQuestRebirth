@@ -10,7 +10,7 @@ public class EternalQuest : ModuleRules
 
 		PublicIncludePaths.AddRange(new string[] { "EternalQuest" });
 	
-		PublicDependencyModuleNames.AddRange(new string[] { "Core", "CoreUObject", "Engine", "InputCore", "EnhancedInput" });
+		PublicDependencyModuleNames.AddRange(new string[] { "Core", "CoreUObject", "Engine", "InputCore", "EnhancedInput", "UMG" });
 
 		PrivateDependencyModuleNames.AddRange(new string[] { });
 
