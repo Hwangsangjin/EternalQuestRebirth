@@ -4,6 +4,7 @@
 #include "EnhancedInputComponent.h"
 #include "EnhancedInputSubsystems.h"
 #include "Camera/CameraComponent.h"
+#include "Component/EQAttributeComponent.h"
 #include "GameFramework/CharacterMovementComponent.h"
 #include "GameFramework/SpringArmComponent.h"
 
@@ -17,6 +18,8 @@ AEQCharacter::AEQCharacter()
 
 	GetCharacterMovement()->bOrientRotationToMovement = true;
 	GetCharacterMovement()->RotationRate = FRotator(0.0f, 500.0f, 0.0f);
+	GetCharacterMovement()->MaxWalkSpeed = 500.0f;
+	GetCharacterMovement()->BrakingDecelerationWalking = 2000.0f;
 
 	CameraBoom = CreateDefaultSubobject<USpringArmComponent>(TEXT("CameraBoom"));
 	CameraBoom->SetupAttachment(RootComponent);
@@ -27,47 +30,59 @@ AEQCharacter::AEQCharacter()
 	FollowCamera = CreateDefaultSubobject<UCameraComponent>(TEXT("FollowCamera"));
 	FollowCamera->SetupAttachment(CameraBoom);
 	FollowCamera->bUsePawnControlRotation = false;
-}
 
-void AEQCharacter::BeginPlay()
-{
-	Super::BeginPlay();
-}
+	AttributeComponent = CreateDefaultSubobject<UEQAttributeComponent>(TEXT("AttributeComponent"));
 
-void AEQCharacter::Tick(float DeltaTime)
-{
-	Super::Tick(DeltaTime);
+	MovingThreshold = 3.0f;
+	StaminaCost = 0.1f;
+	SprintCost = 1.0f;
+	SprintSpeed = 750.0f;
+	NormalSpeed = 500.0f;
 }
 
 void AEQCharacter::NotifyControllerChanged()
 {
 	Super::NotifyControllerChanged();
 
-	if (const APlayerController* PlayerController = Cast<APlayerController>(GetController()))
+	const APlayerController* PlayerController = Cast<APlayerController>(GetController());
+	if (PlayerController == nullptr)
 	{
-		if (UEnhancedInputLocalPlayerSubsystem* Subsystem = ULocalPlayer::GetSubsystem<UEnhancedInputLocalPlayerSubsystem>(PlayerController->GetLocalPlayer()))
-		{
-			Subsystem->AddMappingContext(DefaultMappingContext, 0);
-		}
+		UE_LOG(LogTemp, Warning, TEXT("Player Controller is nullptr."));
+		return;
 	}
+
+	UEnhancedInputLocalPlayerSubsystem* Subsystem = ULocalPlayer::GetSubsystem<UEnhancedInputLocalPlayerSubsystem>(PlayerController->GetLocalPlayer());
+	if (Subsystem == nullptr)
+	{
+		UE_LOG(LogTemp, Warning, TEXT("Enhanced Input Local Player Subsystem is nullptr."));
+		return;
+	}
+
+	Subsystem->AddMappingContext(DefaultMappingContext, 0);
 }
 
 void AEQCharacter::SetupPlayerInputComponent(UInputComponent* PlayerInputComponent)
 {
 	Super::SetupPlayerInputComponent(PlayerInputComponent);
 
-	if (UEnhancedInputComponent* EnhancedInputComponent = Cast<UEnhancedInputComponent>(PlayerInputComponent))
+	UEnhancedInputComponent* EnhancedInputComponent = Cast<UEnhancedInputComponent>(PlayerInputComponent);
+	if (EnhancedInputComponent == nullptr)
 	{
-		EnhancedInputComponent->BindAction(MoveAction, ETriggerEvent::Triggered, this, &ThisClass::Move);
-		EnhancedInputComponent->BindAction(LookAction, ETriggerEvent::Triggered, this, &ThisClass::Look);
+		UE_LOG(LogTemp, Warning, TEXT("Enhanced Input Component is nullptr."));
+		return;
 	}
+
+	EnhancedInputComponent->BindAction(MoveAction, ETriggerEvent::Triggered, this, &ThisClass::Move);
+	EnhancedInputComponent->BindAction(LookAction, ETriggerEvent::Triggered, this, &ThisClass::Look);
+	EnhancedInputComponent->BindAction(SprintAction, ETriggerEvent::Triggered, this, &ThisClass::Sprinting);
+	EnhancedInputComponent->BindAction(SprintAction, ETriggerEvent::Completed, this, &ThisClass::StopSprint);
 }
 
 void AEQCharacter::Move(const FInputActionValue& Value)
 {
-	if (!IsValid(Controller))
+	if (Controller == nullptr)
 	{
-		UE_LOG(LogTemp, Warning, TEXT("Controller is not valid."));
+		UE_LOG(LogTemp, Warning, TEXT("Controller is nullptr."));
 		return;
 	}
 
@@ -85,9 +100,9 @@ void AEQCharacter::Move(const FInputActionValue& Value)
 
 void AEQCharacter::Look(const FInputActionValue& Value)
 {
-	if (!IsValid(Controller))
+	if (Controller == nullptr)
 	{
-		UE_LOG(LogTemp, Warning, TEXT("Controller is not valid."));
+		UE_LOG(LogTemp, Warning, TEXT("Controller is nullptr."));
 		return;
 	}
 
@@ -95,4 +110,37 @@ void AEQCharacter::Look(const FInputActionValue& Value)
 
 	AddControllerYawInput(LookVector.X);
 	AddControllerPitchInput(LookVector.Y);
+}
+
+bool AEQCharacter::IsMoving() const
+{
+	const UCharacterMovementComponent* Movement = GetCharacterMovement();
+	if (Movement == nullptr)
+	{
+		UE_LOG(LogTemp, Warning, TEXT("Character Movement Component is nullptr."));
+		return false;
+	}
+
+	return Movement->Velocity.Size2D() > MovingThreshold && Movement->GetCurrentAcceleration() != FVector::Zero();
+}
+
+void AEQCharacter::Sprinting()
+{
+	if (AttributeComponent->CheckHasEnoughStamina(SprintCost) && IsMoving())
+	{
+		AttributeComponent->ToggleRegainStamina(false);
+		AttributeComponent->DecreaseStamina(StaminaCost);
+
+		GetCharacterMovement()->MaxWalkSpeed = SprintSpeed;
+	}
+	else
+	{
+		StopSprint();
+	}
+}
+
+void AEQCharacter::StopSprint()
+{
+	GetCharacterMovement()->MaxWalkSpeed = NormalSpeed;
+	AttributeComponent->ToggleRegainStamina(true);
 }
