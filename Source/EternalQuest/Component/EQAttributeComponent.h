@@ -30,14 +30,19 @@ public:
 	void BroadcastAttributeChanged(EEQAttributeType InAttributeType) const;
 	FOnAttributeChanged OnAttributeChanged;
 
+protected:
+	virtual void BeginPlay() override;
+
+	void ModifyStamina(float Delta);
+
 private:
-	UPROPERTY(EditAnywhere, Category = Stamina, meta = (AllowPrivateAccess = true))
+	UPROPERTY(VisibleInstanceOnly, Category = Stamina, meta = (AllowPrivateAccess = true))
 	float BaseStamina;
 
-	UPROPERTY(EditAnywhere, Category = Stamina, meta = (AllowPrivateAccess = true))
+	UPROPERTY(VisibleInstanceOnly, Category = Stamina, meta = (AllowPrivateAccess = true))
 	float MaxStamina;
 
-	UPROPERTY(EditAnywhere, Category = Stamina, meta = (AllowPrivateAccess = true))
+	UPROPERTY(VisibleInstanceOnly, Category = Stamina, meta = (AllowPrivateAccess = true))
 	float RegainRate;
 
 	FTimerHandle RegainStaminaTimerHandle;

@@ -4,9 +4,25 @@
 
 UEQAttributeComponent::UEQAttributeComponent()
 {
-	RegainRate = 0.1f;
+	RegainRate = 1.0f;
 	MaxStamina = 100.0f;
 	BaseStamina = MaxStamina;
+}
+
+void UEQAttributeComponent::BeginPlay()
+{
+	Super::BeginPlay();
+
+	ModifyStamina(MaxStamina);
+}
+
+void UEQAttributeComponent::ModifyStamina(float Delta)
+{
+	// 스태미나를 RegainRate만큼 회복하되, 최대치를 초과하지 않도록 클램프
+	BaseStamina = FMath::Clamp(BaseStamina + Delta, 0.0f, MaxStamina);
+
+	// 스태미나 변경 알림
+	BroadcastAttributeChanged(EEQAttributeType::Stamina);
 }
 
 bool UEQAttributeComponent::CheckHasEnoughStamina(float StaminaCost) const
@@ -16,7 +32,7 @@ bool UEQAttributeComponent::CheckHasEnoughStamina(float StaminaCost) const
 
 void UEQAttributeComponent::DecreaseStamina(float StaminaCost)
 {
-	BaseStamina = FMath::Clamp(BaseStamina - StaminaCost, 0.0f, MaxStamina);
+	ModifyStamina(-StaminaCost);
 }
 
 void UEQAttributeComponent::ToggleRegainStamina(bool bEnabled)
@@ -38,11 +54,7 @@ void UEQAttributeComponent::ToggleRegainStamina(bool bEnabled)
 
 void UEQAttributeComponent::RegainStamina()
 {
-	// 스태미나를 RegainRate만큼 회복하되, 최대치를 초과하지 않도록 클램프
-	BaseStamina = FMath::Clamp(BaseStamina + RegainRate, 0.0f, MaxStamina);
-
-	// 스태미나 변경 알림
-	BroadcastAttributeChanged(EEQAttributeType::Stamina);
+	ModifyStamina(RegainRate);
 
 	// 스태미나가 가득 찼다면 회복 중지
 	if (BaseStamina >= MaxStamina)
