@@ -10,4 +10,7 @@ UCLASS()
 class ETERNALQUEST_API AEQGameMode : public AGameModeBase
 {
 	GENERATED_BODY()
+
+public:
+	AEQGameMode();
 };
