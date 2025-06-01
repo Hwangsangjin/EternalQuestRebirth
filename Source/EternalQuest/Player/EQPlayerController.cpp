@@ -1,7 +1,7 @@
 ﻿// Fill out your copyright notice in the Description page of Project Settings.
 
 #include "EQPlayerController.h"
-#include "Widget/EQPlayerHUDWidget.h"
+#include "UI/EQPlayerHUDWidget.h"
 
 AEQPlayerController::AEQPlayerController()
 {
@@ -19,16 +19,14 @@ void AEQPlayerController::BeginPlay()
 	const FInputModeGameOnly InputModeGameOnly;
 	SetInputMode(InputModeGameOnly);
 
-	if (PlayerHUDWidgetClass == nullptr)
+	if (!PlayerHUDWidgetClass)
 	{
-		UE_LOG(LogTemp, Warning, TEXT("Player HUD Widget Class is nullptr."));
 		return;
 	}
 
 	PlayerHUDWidget = CreateWidget<UEQPlayerHUDWidget>(this, PlayerHUDWidgetClass);
-	if (PlayerHUDWidget == nullptr)
+	if (!PlayerHUDWidget)
 	{
-		UE_LOG(LogTemp, Warning, TEXT("Player HUD Widget is nullptr."));
 		return;
 	}
 
