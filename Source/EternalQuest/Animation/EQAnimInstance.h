@@ -22,10 +22,10 @@ protected:
 
 private:
 	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = Character, Meta = (AllowPrivateAccess = true))
-	TObjectPtr<ACharacter> Owner;
+	TObjectPtr<ACharacter> Character;
 
 	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = Character, Meta = (AllowPrivateAccess = true))
-	TObjectPtr<UCharacterMovementComponent> Movement;
+	TObjectPtr<UCharacterMovementComponent> CharacterMovementComponent;
 
 	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = Character, Meta = (AllowPrivateAccess = true))
 	float GroundSpeed;

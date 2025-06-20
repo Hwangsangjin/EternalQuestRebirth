@@ -14,34 +14,34 @@ void UEQAnimInstance::NativeInitializeAnimation()
 {
 	Super::NativeInitializeAnimation();
 
-	Owner = Cast<ACharacter>(GetOwningActor());
-	if (!Owner)
+	Character = Cast<ACharacter>(GetOwningActor());
+	if (!Character)
 	{
 		return;
 	}
 
-	Movement = Owner->GetCharacterMovement();
+	CharacterMovementComponent = Character->GetCharacterMovement();
 }
 
 void UEQAnimInstance::NativeUpdateAnimation(float DeltaSeconds)
 {
 	Super::NativeUpdateAnimation(DeltaSeconds);
 
-	if (!Movement)
+	if (!CharacterMovementComponent)
 	{
 		return;
 	}
 
-	const FVector Velocity = Owner->GetVelocity();
+	const FVector Velocity = Character->GetVelocity();
 	GroundSpeed = Velocity.Size2D();
 
-	const FVector ForwardVector = Owner->GetActorForwardVector();
-	const FVector RightVector = Owner->GetActorRightVector();
+	const FVector ForwardVector = Character->GetActorForwardVector();
+	const FVector RightVector = Character->GetActorRightVector();
 	const FVector2D MoveDirection = FVector2D(FVector::DotProduct(ForwardVector, Velocity), FVector::DotProduct(RightVector, Velocity));
 	const float DirectionAngle = FMath::Atan2(MoveDirection.Y, MoveDirection.X);
 	Direction = FMath::RadiansToDegrees(DirectionAngle);
 
 	bIsMoving = GroundSpeed > MovingThreshold;
-	bIsFalling = Movement->IsFalling();
+	bIsFalling = CharacterMovementComponent->IsFalling();
 	bIsJumping = bIsFalling & (Velocity.Z > JumpingThreshold);
 }
