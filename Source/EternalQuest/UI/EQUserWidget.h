@@ -3,19 +3,22 @@
 #pragma once
 
 #include "CoreMinimal.h"
+#include "AbilitySystemInterface.h"
 #include "Blueprint/UserWidget.h"
 #include "EQUserWidget.generated.h"
 
 UCLASS()
-class ETERNALQUEST_API UEQUserWidget : public UUserWidget
+class ETERNALQUEST_API UEQUserWidget : public UUserWidget, public IAbilitySystemInterface
 {
 	GENERATED_BODY()
 
 public:
-	FORCEINLINE AActor* GetOwningActor() const { return OwningActor.Get(); }
-	FORCEINLINE void SetOwningActor(AActor* InActor) { OwningActor = InActor; }
+	explicit UEQUserWidget(const FObjectInitializer& ObjectInitializer = FObjectInitializer::Get());
+
+	virtual UAbilitySystemComponent* GetAbilitySystemComponent() const override;
+	virtual void SetAbilitySystemComponent(UAbilitySystemComponent* InAbilitySystemComponent);
 
 protected:
-	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = Actor)
-	TObjectPtr<AActor> OwningActor;
+	UPROPERTY(EditAnywhere, Category = GAS, Meta = (AllowPrivateAccess = true))
+	TObjectPtr<UAbilitySystemComponent> AbilitySystemComponent;
 };
