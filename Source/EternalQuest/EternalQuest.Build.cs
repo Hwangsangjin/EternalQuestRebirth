@@ -8,14 +8,14 @@ public class EternalQuest : ModuleRules
 	{
 		PCHUsage = PCHUsageMode.UseExplicitOrSharedPCHs;
 
-		PublicIncludePaths.AddRange(new string[] { "EternalQuest" });
+		PublicIncludePaths.AddRange(["EternalQuest"]);
 	
-		PublicDependencyModuleNames.AddRange(new string[] { "Core", "CoreUObject", "Engine", "InputCore", "EnhancedInput", "UMG" });
+		PublicDependencyModuleNames.AddRange(["Core", "CoreUObject", "Engine", "InputCore", "EnhancedInput", "UMG", "Niagara", "NavigationSystem", "AIModule"]);
 
-		PrivateDependencyModuleNames.AddRange(new string[] { "GameFeatures", "GameplayAbilities", "GameplayTasks", "GameplayTags" });
+		PrivateDependencyModuleNames.AddRange(["GameFeatures", "GameplayAbilities", "GameplayTasks", "GameplayTags"]);
 
 		// Uncomment if you are using Slate UI
-		// PrivateDependencyModuleNames.AddRange(new string[] { "Slate", "SlateCore" });
+		// PrivateDependencyModuleNames.AddRange(["Slate", "SlateCore"]);
 
 		// Uncomment if you are using online features
 		// PrivateDependencyModuleNames.Add("OnlineSubsystem");
