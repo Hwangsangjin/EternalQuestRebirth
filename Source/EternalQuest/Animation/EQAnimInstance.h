@@ -4,8 +4,10 @@
 
 #include "CoreMinimal.h"
 #include "Animation/AnimInstance.h"
+#include "Character/EQBaseCharacter.h"
 #include "EQAnimInstance.generated.h"
 
+enum class ECombatType : uint8;
 class UCharacterMovementComponent;
 
 UCLASS()
@@ -15,6 +17,9 @@ class ETERNALQUEST_API UEQAnimInstance : public UAnimInstance
 
 public:
 	UEQAnimInstance();
+
+	void UpdateCombatType(const ECombatType& InCombatType);
+	void OnChangedCombat(const bool bInCombatEnabled);
 
 protected:
 	virtual void NativeInitializeAnimation() override;
@@ -47,4 +52,10 @@ private:
 
 	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = Character, Meta = (AllowPrivateAccess = true))
 	float JumpingThreshold;
+
+	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = Character, Meta = (AllowPrivateAccess = true))
+	uint8 bCombatEnabled : 1;
+
+	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = Character, Meta = (AllowPrivateAccess = true))
+	ECombatType CombatType;
 };
