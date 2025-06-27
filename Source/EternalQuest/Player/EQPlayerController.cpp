@@ -1,34 +1,31 @@
 ﻿// Fill out your copyright notice in the Description page of Project Settings.
 
 #include "EQPlayerController.h"
-#include "UI/EQPlayerHUDWidget.h"
+#include "UI/EQHUDWidget.h"
 
 AEQPlayerController::AEQPlayerController()
 {
-	static ConstructorHelpers::FClassFinder<UEQPlayerHUDWidget> PlayerHUDWidgetClassRef(TEXT("/Game/Blueprints/UI/WBP_PlayerHUD.WBP_PlayerHUD_C"));
-	if (PlayerHUDWidgetClassRef.Succeeded())
+	static ConstructorHelpers::FClassFinder<UEQHUDWidget> HUDWidgetClassRef(TEXT("/Game/Blueprints/UI/WBP_HUD.WBP_HUD_C"));
+	if (HUDWidgetClassRef.Succeeded())
 	{
-		PlayerHUDWidgetClass = PlayerHUDWidgetClassRef.Class;
+		HUDWidgetClass = HUDWidgetClassRef.Class;
 	}
 }
 
-void AEQPlayerController::BeginPlay()
+void AEQPlayerController::OnPossess(APawn* InPawn)
 {
-	Super::BeginPlay();
+	Super::OnPossess(InPawn);
+
+	check(HUDWidgetClass);
+
+	HUDWidget = CreateWidget<UEQHUDWidget>(this, HUDWidgetClass);
+	if (!HUDWidget)
+	{
+		return;
+	}
+
+	HUDWidget->AddToViewport();
 
 	const FInputModeGameOnly InputModeGameOnly;
 	SetInputMode(InputModeGameOnly);
-
-	if (!PlayerHUDWidgetClass)
-	{
-		return;
-	}
-
-	PlayerHUDWidget = CreateWidget<UEQPlayerHUDWidget>(this, PlayerHUDWidgetClass);
-	if (!PlayerHUDWidget)
-	{
-		return;
-	}
-
-	PlayerHUDWidget->AddToViewport();
 }

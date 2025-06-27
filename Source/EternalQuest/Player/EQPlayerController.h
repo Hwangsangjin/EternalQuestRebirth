@@ -6,7 +6,7 @@
 #include "GameFramework/PlayerController.h"
 #include "EQPlayerController.generated.h"
 
-class UEQPlayerHUDWidget;
+class UEQHUDWidget;
 
 UCLASS()
 class ETERNALQUEST_API AEQPlayerController : public APlayerController
@@ -16,13 +16,15 @@ class ETERNALQUEST_API AEQPlayerController : public APlayerController
 public:
 	AEQPlayerController();
 
+	FORCEINLINE UEQHUDWidget* GetHUDWidget() const { return HUDWidget; }
+
 protected:
-	virtual void BeginPlay() override;
+	virtual void OnPossess(APawn* InPawn) override;
 
 private:
-	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = UI, meta = (AllowPrivateAccess = true))
-	TSubclassOf<UUserWidget> PlayerHUDWidgetClass;
+	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = UI, Meta = (AllowPrivateAccess = true))
+	TSubclassOf<UEQHUDWidget> HUDWidgetClass;
 
-	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = UI, meta = (AllowPrivateAccess = true))
-	TObjectPtr<UEQPlayerHUDWidget> PlayerHUDWidget;
+	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = UI, Meta = (AllowPrivateAccess = true))
+	TObjectPtr<UEQHUDWidget> HUDWidget;
 };
