@@ -19,6 +19,8 @@ public:
 	UEQAnimInstance();
 
 	void UpdateCombatType(const ECombatType& InCombatType);
+	void UpdateBlocking(bool bInShouldBlocking);
+
 	void OnChangedCombat(const bool bInCombatEnabled);
 
 protected:
@@ -58,4 +60,7 @@ private:
 
 	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = Character, Meta = (AllowPrivateAccess = true))
 	ECombatType CombatType;
+
+	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = Character, Meta = (AllowPrivateAccess = true))
+	uint8 bShouldBlocking : 1;
 };

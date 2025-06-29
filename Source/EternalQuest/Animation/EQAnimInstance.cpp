@@ -61,6 +61,11 @@ void UEQAnimInstance::UpdateCombatType(const ECombatType& InCombatType)
 	CombatType = InCombatType;
 }
 
+void UEQAnimInstance::UpdateBlocking(bool bInShouldBlocking)
+{
+	bShouldBlocking = bInShouldBlocking;
+}
+
 void UEQAnimInstance::OnChangedCombat(const bool bInCombatEnabled)
 {
 	bCombatEnabled = bInCombatEnabled;
