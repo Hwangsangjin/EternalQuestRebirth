@@ -7,7 +7,9 @@
 #include "Component/EQCollisionComponent.h"
 #include "Component/EQCombatComponent.h"
 #include "Data/EQMontageActionData.h"
+#include "GameplayTag/EQGameplayTag.h"
 #include "Kismet/GameplayStatics.h"
+#include "Kismet/KismetMathLibrary.h"
 
 AEQWeapon::AEQWeapon()
 {
@@ -20,7 +22,13 @@ void AEQWeapon::EquipItem()
 {
 	Super::EquipItem();
 
-	CombatComponent = GetOwner()->GetComponentByClass<UEQCombatComponent>();
+	AActor* OwnerActor = GetOwner();
+	if (!OwnerActor)
+	{
+		return;
+	}
+
+	CombatComponent = OwnerActor->GetComponentByClass<UEQCombatComponent>();
 	if (!CombatComponent)
 	{
 		return;
@@ -31,7 +39,7 @@ void AEQWeapon::EquipItem()
 	const FName SocketName = CombatComponent->IsCombatEnabled() ? EquipSocketName : UnequipSocketName;
 	AttachToOwner(SocketName);
 
-	const AEQBaseCharacter* OwnerCharacter = Cast<AEQBaseCharacter>(GetOwner());
+	AEQBaseCharacter* OwnerCharacter = Cast<AEQBaseCharacter>(OwnerActor);
 	if (!OwnerCharacter)
 	{
 		return;
@@ -46,7 +54,7 @@ void AEQWeapon::EquipItem()
 	AnimInstance->UpdateCombatType(CombatType);
 
 	CollisionComponent->SetPrimitiveComponent(SkeletalMeshComponent);
-	CollisionComponent->AddIgnoredActor(GetOwner());
+	CollisionComponent->AddIgnoredActor(OwnerCharacter);
 }
 
 void AEQWeapon::UnequipItem()
@@ -74,6 +82,52 @@ UAnimMontage* AEQWeapon::GetRandomMontageForTag(const FGameplayTag& GameplayTag)
 	return MontageActionData->GetRandomMontageForTag(GameplayTag);
 }
 
+UAnimMontage* AEQWeapon::GetHitReactionMontage(const AActor* Attacker) const
+{
+	const FRotator LookAtRotation = UKismetMathLibrary::FindLookAtRotation(GetOwner()->GetActorLocation(), Attacker->GetActorLocation());
+	const FRotator DeltaRotation = UKismetMathLibrary::NormalizedDeltaRotator(GetOwner()->GetActorRotation(), LookAtRotation);
+	const float DeltaZ = DeltaRotation.Yaw;
+
+	EHitDirection HitDirection = EHitDirection::Front;
+
+	if (UKismetMathLibrary::InRange_FloatFloat(DeltaZ, -45.0f, 45.0f))
+	{
+		HitDirection = EHitDirection::Front;
+	}
+	else if (UKismetMathLibrary::InRange_FloatFloat(DeltaZ, 45.0f, 135.0f))
+	{
+		HitDirection = EHitDirection::Left;
+	}
+	else if (UKismetMathLibrary::InRange_FloatFloat(DeltaZ, 135.0f, 180.0f)
+		|| UKismetMathLibrary::InRange_FloatFloat(DeltaZ, -180.0f, -135.0f))
+	{
+		HitDirection = EHitDirection::Back;
+	}
+	else if (UKismetMathLibrary::InRange_FloatFloat(DeltaZ, -135.0f, -45.0f))
+	{
+		HitDirection = EHitDirection::Right;
+	}
+
+	UAnimMontage* SelectedMontage = nullptr;
+	switch (HitDirection)
+	{
+	case EHitDirection::Front:
+		SelectedMontage = GetMontageForTag(EQGameplayTag::Character_Action_HitReaction, 0);
+		break;
+	case EHitDirection::Back:
+		SelectedMontage = GetMontageForTag(EQGameplayTag::Character_Action_HitReaction, 0);
+		break;
+	case EHitDirection::Left:
+		SelectedMontage = GetMontageForTag(EQGameplayTag::Character_Action_HitReaction, 0);
+		break;
+	case EHitDirection::Right:
+		SelectedMontage = GetMontageForTag(EQGameplayTag::Character_Action_HitReaction, 0);
+		break;
+	}
+
+	return SelectedMontage;
+}
+
 void AEQWeapon::OnHitCallback(const FHitResult& HitResult)
 {
 	AActor* TargetActor = HitResult.GetActor();
@@ -82,5 +136,5 @@ void AEQWeapon::OnHitCallback(const FHitResult& HitResult)
 
 	constexpr float AttackDamage = 0.0f;
 
-	UGameplayStatics::ApplyPointDamage(TargetActor, AttackDamage, DamageDirection, HitResult, GetOwner()->GetInstigatorController(), this, nullptr);
+	//UGameplayStatics::ApplyPointDamage(TargetActor, AttackDamage, DamageDirection, HitResult, GetOwner()->GetInstigatorController(), this, nullptr);
 }

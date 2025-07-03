@@ -28,11 +28,14 @@ public:
 
 	UAnimMontage* GetMontageForTag(const FGameplayTag& GameplayTag, const int32 Index = 0) const;
 	UAnimMontage* GetRandomMontageForTag(const FGameplayTag& GameplayTag) const;
+	UAnimMontage* GetHitReactionMontage(const AActor* Attacker) const;
 
 	FORCEINLINE FName GetEquipSocketName() const { return EquipSocketName; }
 	FORCEINLINE FName GetUnequipSocketName() const { return UnequipSocketName; }
 
 	FORCEINLINE UEQCollisionComponent* GetCollisionComponent() const { return CollisionComponent; }
+
+	FORCEINLINE ECombatType GetCombatType() const { return CombatType; }
 
 	void OnHitCallback(const FHitResult& HitResult);
 
