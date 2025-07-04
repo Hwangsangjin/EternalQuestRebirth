@@ -5,9 +5,10 @@
 #include "CoreMinimal.h"
 #include "GameplayTagContainer.h"
 #include "Components/ActorComponent.h"
+#include "GameplayTag/EQGameplayTag.h"
 #include "EQStateComponent.generated.h"
 
-UCLASS(ClassGroup = (Custom), meta = (BlueprintSpawnableComponent))
+UCLASS(ClassGroup = (Custom), Meta = (BlueprintSpawnableComponent))
 class ETERNALQUEST_API UEQStateComponent : public UActorComponent
 {
 	GENERATED_BODY()
@@ -17,17 +18,31 @@ public:
 
 	bool IsCurrentStateEqualToAny(const FGameplayTagContainer& GameplayTagContainer) const;
 
-	FORCEINLINE FGameplayTag GetCurrentState() { return CurrentState; }
-	FORCEINLINE void SetState(const FGameplayTag& NewState) { CurrentState = NewState; }
 	void ClearState();
 
+	void ToggleMovementInput(bool bEnabled, float Duration = 0.0f);
+
 	FORCEINLINE bool IsMovementInputEnabled() const { return bMovementInputEnabled; }
-	FORCEINLINE void ToggleMovementInput(bool bEnabled) { bMovementInputEnabled = bEnabled; }
+
+	FORCEINLINE FGameplayTag GetCurrentState() const { return CurrentState; }
+	FORCEINLINE void SetState(const FGameplayTag& NewState)
+	{
+		if (CurrentState == EQGameplayTag::Character_State_Dead)
+		{
+			return;
+		}
+
+		CurrentState = NewState;
+	}
+
+protected:
+	UFUNCTION()
+	void MovementInputEnableAction();
 
 private:
-	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = State, meta = (AllowPrivateAccess = true))
+	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = State, Meta = (AllowPrivateAccess = true))
 	FGameplayTag CurrentState;
 
-	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = State, meta = (AllowPrivateAccess = true))
+	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = State, Meta = (AllowPrivateAccess = true))
 	uint8 bMovementInputEnabled : 1;
 };

@@ -1,7 +1,8 @@
 ﻿// Fill out your copyright notice in the Description page of Project Settings.
 
 #include "EQStateComponent.h"
-#include "EternalQuestGameplayTags.h"
+#include "GameplayTag/EQGameplayTag.h"
+#include "Kismet/KismetSystemLibrary.h"
 
 UEQStateComponent::UEQStateComponent()
 {
@@ -15,10 +16,35 @@ bool UEQStateComponent::IsCurrentStateEqualToAny(const FGameplayTagContainer& Ga
 
 void UEQStateComponent::ClearState()
 {
-	if (CurrentState == EternalQuestGameplayTags::Character_State_Death)
+	if (CurrentState == EQGameplayTag::Character_State_Dead)
 	{
 		return;
 	}
 
 	CurrentState = FGameplayTag::EmptyTag;
+}
+
+void UEQStateComponent::ToggleMovementInput(bool bEnabled, float Duration)
+{
+	if (bEnabled)
+	{
+		FLatentActionInfo LatentActionInfo;
+		LatentActionInfo.CallbackTarget = this;
+		LatentActionInfo.ExecutionFunction = "MovementInputEnableAction";
+		LatentActionInfo.Linkage = 0;
+		LatentActionInfo.UUID = 0;
+
+		UKismetSystemLibrary::RetriggerableDelay(GetWorld(), Duration, LatentActionInfo);
+	}
+	else
+	{
+		bMovementInputEnabled = false;
+	}
+}
+
+void UEQStateComponent::MovementInputEnableAction()
+{
+	bMovementInputEnabled = true;
+
+	ClearState();
 }
