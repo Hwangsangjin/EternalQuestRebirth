@@ -3,13 +3,20 @@
 #pragma once
 
 #include "CoreMinimal.h"
-#include "EternalQuestDefine.h"
 #include "Components/ActorComponent.h"
 #include "EQAttributeComponent.generated.h"
 
-DECLARE_MULTICAST_DELEGATE_TwoParams(FOnAttributeChanged, EEQAttributeType, float);
+UENUM(BlueprintType)
+enum class EEQAttributeType : uint8
+{
+	Health	UMETA(DisplayName = "Health"),
+	Stamina	UMETA(DisplayName = "Stamina")
+};
 
-UCLASS(ClassGroup = (Custom), meta = (BlueprintSpawnableComponent))
+DECLARE_MULTICAST_DELEGATE_TwoParams(FOnAttributeChangedDelegate, EEQAttributeType, float);
+DECLARE_MULTICAST_DELEGATE(FOnDeadDelegate);
+
+UCLASS(ClassGroup = (Custom), Meta = (BlueprintSpawnableComponent))
 class ETERNALQUEST_API UEQAttributeComponent : public UActorComponent
 {
 	GENERATED_BODY()
@@ -17,9 +24,12 @@ class ETERNALQUEST_API UEQAttributeComponent : public UActorComponent
 public:
 	UEQAttributeComponent();
 
+	FORCEINLINE float GetBaseHealth() const { return BaseHealth; }
+	FORCEINLINE float GetMaxHealth() const { return MaxHealth; }
 	FORCEINLINE float GetBaseStamina() const { return BaseStamina; }
 	FORCEINLINE float GetMaxStamina() const { return MaxStamina; }
 
+	FORCEINLINE float GetHealthRatio() const { return BaseHealth / MaxHealth; }
 	FORCEINLINE float GetStaminaRatio() const { return BaseStamina / MaxStamina; }
 
 	bool CheckHasEnoughStamina(float StaminaCost) const;
@@ -28,7 +38,13 @@ public:
 	void RegainStamina();
 
 	void BroadcastAttributeChanged(EEQAttributeType InAttributeType) const;
-	FOnAttributeChanged OnAttributeChanged;
+	FOnAttributeChangedDelegate OnAttributeChangedDelegate;
+
+	void TakeDamageAmount(float DamageAmount);
+
+	void Heal(float HealAmount);
+
+	FOnDeadDelegate OnDeadDelegate;
 
 protected:
 	virtual void BeginPlay() override;
@@ -36,14 +52,20 @@ protected:
 	void ModifyStamina(float Delta);
 
 private:
-	UPROPERTY(VisibleInstanceOnly, Category = Stamina, meta = (AllowPrivateAccess = true))
+	UPROPERTY(VisibleInstanceOnly, Category = Stamina, Meta = (AllowPrivateAccess = true))
 	float BaseStamina;
 
-	UPROPERTY(VisibleInstanceOnly, Category = Stamina, meta = (AllowPrivateAccess = true))
+	UPROPERTY(VisibleInstanceOnly, Category = Stamina, Meta = (AllowPrivateAccess = true))
 	float MaxStamina;
 
-	UPROPERTY(VisibleInstanceOnly, Category = Stamina, meta = (AllowPrivateAccess = true))
+	UPROPERTY(VisibleInstanceOnly, Category = Stamina, Meta = (AllowPrivateAccess = true))
 	float RegainRate;
+
+	UPROPERTY(VisibleInstanceOnly, Category = Health, Meta = (AllowPrivateAccess = true))
+	float BaseHealth;
+
+	UPROPERTY(VisibleInstanceOnly, Category = Health, Meta = (AllowPrivateAccess = true))
+	float MaxHealth;
 
 	FTimerHandle RegainStaminaTimerHandle;
 };

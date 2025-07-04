@@ -1,12 +1,16 @@
 ﻿// Fill out your copyright notice in the Description page of Project Settings.
 
 #include "EQAttributeComponent.h"
+#include "EQStateComponent.h"
+#include "GameplayTag/EQGameplayTag.h"
 
 UEQAttributeComponent::UEQAttributeComponent()
 {
-	RegainRate = 1.0f;
+	MaxHealth = 100.0f;
+	BaseHealth = MaxHealth;
 	MaxStamina = 100.0f;
 	BaseStamina = MaxStamina;
+	RegainRate = 1.0f;
 }
 
 void UEQAttributeComponent::BeginPlay()
@@ -66,18 +70,50 @@ void UEQAttributeComponent::RegainStamina()
 void UEQAttributeComponent::BroadcastAttributeChanged(EEQAttributeType InAttributeType) const
 {
 	// 델리게이트가 바인딩되어 있을 경우만 실행
-	if (OnAttributeChanged.IsBound())
+	if (OnAttributeChangedDelegate.IsBound())
 	{
 		float Ratio = 0.0f;
 
 		switch (InAttributeType)
 		{
+		case EEQAttributeType::Health:
+			Ratio = GetHealthRatio();
+			break;
 		case EEQAttributeType::Stamina:
 			Ratio = GetStaminaRatio();
 			break;
 		}
 
 		// 속성 타입과 비율을 브로드캐스트
-		OnAttributeChanged.Broadcast(InAttributeType, Ratio);
+		OnAttributeChangedDelegate.Broadcast(InAttributeType, Ratio);
 	}
+}
+
+void UEQAttributeComponent::TakeDamageAmount(float DamageAmount)
+{
+	// 체력 차감
+	BaseHealth = FMath::Clamp(BaseHealth - DamageAmount, 0.0f, MaxHealth);
+
+	BroadcastAttributeChanged(EEQAttributeType::Health);
+
+	if (BaseHealth <= 0.0f)
+	{
+		// 죽음 델리게이트 호출
+		if (OnDeadDelegate.IsBound())
+		{
+			OnDeadDelegate.Broadcast();
+		}
+
+		// 죽음 상태 설정
+		if (UEQStateComponent* StateComponent = GetOwner()->FindComponentByClass<UEQStateComponent>())
+		{
+			StateComponent->SetState(EQGameplayTag::Character_State_Dead);
+		}
+	}
+}
+
+void UEQAttributeComponent::Heal(float HealAmount)
+{
+	BaseHealth = FMath::Clamp(BaseHealth + HealAmount, 0.0f, MaxHealth);
+	BroadcastAttributeChanged(EEQAttributeType::Health);
 }
