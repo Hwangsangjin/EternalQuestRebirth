@@ -96,7 +96,7 @@ void UEQAttributeBarWidget::SetAbilitySystemComponent(UAbilitySystemComponent* I
 		return;
 	}
 
-	AbilitySystemComponent->RegisterGameplayTagEvent(EQGameplayTag::Character_State_Blocking, EGameplayTagEventType::NewOrRemoved).AddUObject(this, &ThisClass::OnInvisibleTagChanged);
+	AbilitySystemComponent->RegisterGameplayTagEvent(EQGameplayTag::Character_State_Invincible, EGameplayTagEventType::NewOrRemoved).AddUObject(this, &ThisClass::OnInvisibleTagChanged);
 
 	check(FrontProgressBar);
 	FrontProgressBar->SetFillColorAndOpacity(NormalColor);
